@@ -208,6 +208,8 @@ Calcula y actualiza la velocidad angular del robot en función del ángulo de gi
 
 
 #### `tomar_decision`
+> [!IMPORTANT]
+> El método `tomarDecision` es el principal en el sistema experto. Se encarga de tomar decisiones basadas en la información actual del robot y el entorno. Se llama en cada ciclo de control del robot.
 Toma una decisión de movimiento para el robot basado en su posición actual y la posición del objetivo en el segmento.
 
 Este método calcula las velocidades lineal y angular necesarias para mover al robot hacia el objetivo de manera eficiente, ajustando su trayectoria en función del ángulo de giro y la distancia al objetivo. También considera la posibilidad de moverse en reversa para optimizar el movimiento en casos donde el ángulo de giro es mayor al umbral definido.
