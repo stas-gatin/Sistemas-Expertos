@@ -27,6 +27,8 @@ Esta clase es el núcleo del proyecto, en la que se implementa el sistema expert
    - [Indicadores y Estados de Trayectoria](#indicadores-y-estados-de-trayectoria)
    - [Parámetros de Velocidad y Movimiento](#parámetros-de-velocidad-y-movimiento)
    - [Parámetros de la Trayectoria Lineal](#parámetros-de-la-trayectoria-lineal)
+   - [Parámetros de la Trayectoria Triangular](#parámetros-de-la-trayectoria-triangular)
+   - [Ángulos y Control de Giro](#ángulos-y-control-de-giro)
    
 2. [Metodos Principales](#funciones-principales)
    - [cubic_bezier](#cubic_bezier)
