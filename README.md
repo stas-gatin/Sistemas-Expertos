@@ -233,11 +233,26 @@ Devuelve `True` cuando el punto final del objetivo ha sido alcanzado. Es respons
 #### `hay_parte_optativa`
 Método para verificar si hay una parte optativa en el proceso. Este método debe ser definido en base a la lógica del robot y su implementación.
 
+---
 
-## Uso y Dependencias
+## Lógica del código
 
-Este código depende de las librerías `numpy` y `math`. Para instalarlas:
+La base del programa es la función `Tomar Decision`, que se llama de forma continua para controlar el movimiento del robot. Esta función realiza las siguientes acciones:
 
-```bash
-pip install numpy
-```
+1. **Obtención de datos y cálculo de la trayectoria**:  
+   La función reúne todos los datos necesarios para construir la trayectoria de movimiento. Para esto, se añaden puntos de control intermedios en cada segmento del camino: en segmentos rectos y en segmentos triangulares. Para cada tipo de segmento, se utilizan los métodos correspondientes definidos en la clase, lo que asegura que los puntos de control se establezcan correctamente.
+
+2. **Selección de dirección y cálculo del ángulo de giro**:  
+   Después de crear la trayectoria y seleccionar el punto de control adecuado, se calcula el ángulo necesario para girar. Dependiendo del ángulo, se elige el modo de movimiento: avance o marcha atrás (reversa). Si es necesario retroceder, se ejecutan funciones adicionales para implementar el movimiento en reversa.
+
+3. **Cálculo de la velocidad angular y lineal**:  
+   Según la posición actual del robot y la dirección elegida, se calculan la velocidad angular y lineal. También se determina la distancia al punto de destino para establecer correctamente la velocidad lineal, lo que permite un movimiento suave.
+
+4. **Verificación de alcance de la meta**:  
+   En cada etapa, se verifica si el robot ha alcanzado su punto de destino. Si se ha llegado a la meta, el movimiento continúa hacia el siguiente punto de control o termina.
+
+5. **Retorno de parámetros de velocidad**:  
+   Al finalizar, la función devuelve los valores de velocidad lineal y angular, los cuales se transmiten para controlar el movimiento del robot.
+
+---
+
