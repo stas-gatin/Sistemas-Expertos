@@ -239,49 +239,181 @@ Método para verificar si hay una parte optativa en el proceso. Este método deb
 
 La base del programa es la función `Tomar Decision`, que se llama de forma continua para controlar el movimiento del robot. Esta función realiza las siguientes acciones:
 
-### 1. **Obtención de datos y cálculo de la trayectoria**:  
-   La función reúne todos los datos necesarios para construir la trayectoria de movimiento. Para esto, se añaden puntos de control intermedios en cada segmento del camino: en segmentos rectos y en segmentos triangulares. Para cada tipo de segmento, se utilizan los métodos correspondientes definidos en la clase, lo que asegura que los puntos de control se establezcan correctamente.
+### 1. **Obtención de datos y cálculo de la trayectoria**  
 
-El algoritmo en la función obtener_coordenadas_objetivo está diseñado para obtener las coordenadas del objetivo del robot en función de su estado actual y posición, así como del tipo de trayectoria. La función considera si el robot se mueve a lo largo de una línea o un triángulo y actualiza dinámicamente las coordenadas del objetivo. Esto permite al robot seguir una trayectoria compleja correctamente, reaccionando a los cambios en el camino.
+La función reúne todos los datos necesarios para construir la trayectoria de movimiento. Para esto, se añaden puntos de control intermedios en cada segmento del camino: en segmentos rectos y en segmentos triangulares. Para cada tipo de segmento, se utilizan los métodos correspondientes definidos en la clase, lo que asegura que los puntos de control se establezcan correctamente.
+
+El algoritmo en la función `obtener_coordenadas_objetivo` está diseñado para obtener las coordenadas del objetivo del robot en función de su estado actual y posición, así como del tipo de trayectoria. La función considera si el robot se mueve a lo largo de una línea o un triángulo y actualiza dinámicamente las coordenadas del objetivo. Esto permite al robot seguir una trayectoria compleja correctamente, reaccionando a los cambios en el camino.
 
 #### Lógica general y estructura de la función
 
-> 1. Determinación del tipo de trayectoria
+> 1. **Determinación del tipo de trayectoria.**  
 > Primero, la función verifica el tipo de camino por el que se mueve el robot, ya sea una línea (segmento) o un triángulo.
 > 
-> 	2.	Retorno al inicio (si es necesario)
+> 2. **Retorno al inicio (si es necesario).**  
 > Si el robot ha alcanzado el punto final de la ruta y necesita regresar al punto de inicio, la función devuelve las coordenadas del primer checkpoint.
 
 #### Generación de trayectoria para el segmento
 
-> Para una línea, la función utiliza el método generate_linear_path, que forma una trayectoria recta entre dos puntos (inicio y fin del segmento). El proceso es el siguiente:
-> 1. Determinación de las coordenadas de inicio y fin
+> Para una línea, la función utiliza el método `generate_linear_path`, que forma una trayectoria recta entre dos puntos (inicio y fin del segmento). El proceso es el siguiente:
+> 
+> 1. **Determinación de las coordenadas de inicio y fin.**  
 > Usando las coordenadas de inicio y fin del segmento, la función divide el camino en un número determinado de puntos intermedios, lo que define una secuencia precisa de movimiento.
->
-> 2.	Comprobación de los checkpoints
-> La función determina si el robot está en el inicio, en el medio o en el final del segmento. Si es el checkpoint inicial, se empieza a generar la trayectoria; si es el último > checkpoint, el robot se detiene o se da la vuelta según las condiciones actuales.
->
-> 	3.	Movimiento a lo largo de la trayectoria
-> En cada paso, la función actualiza las coordenadas del objetivo, asegurando un movimiento fluido a lo largo de la línea. La trayectoria lineal es simple y no requiere cálculos
-adicionales para ajustar la dirección.
+> 
+> 2. **Comprobación de los checkpoints.**  
+> La función determina si el robot está en el inicio, en el medio o en el final del segmento. Si es el checkpoint inicial, se empieza a generar la trayectoria; si es el último checkpoint, el robot se detiene o se da la vuelta según las condiciones actuales.
+> 
+> 3. **Movimiento a lo largo de la trayectoria.**  
+> En cada paso, la función actualiza las coordenadas del objetivo, asegurando un movimiento fluido a lo largo de la línea. La trayectoria lineal es simple y no requiere cálculos adicionales para ajustar la dirección.
 
 #### Generación de trayectoria para el triángulo
 
 > Para el movimiento a lo largo de una trayectoria triangular, la función utiliza el algoritmo de Bézier. La generación de una trayectoria triangular es más compleja, ya que requiere la creación de curvas suaves.
 
-> 1. Algoritmo de Bézier
-> El algoritmo de Bézier permite crear curvas suaves, lo cual es importante para mover al robot en una trayectoria de forma no estándar, como un triángulo. Este algoritmo utiliza cuatro puntos de control para crear una curva que conecta suavemente el inicio, el medio y el fin de la trayectoria triangular. La función cubic_bezier se encarga de calcular las posiciones a lo largo de esta curva en cada segmento.
-> 	2.	Generación del camino curvo
-> Primero, la función determina dos puntos de control intermedios (CP1 y CP2), que definen la forma de la curva. Usando generate_trajectory, la función crea dos curvas de Bézier: una que conecta el primer y segundo puntos del triángulo, y otra que conecta el segundo y tercer puntos.
-> 	3.	Movimiento a lo largo de la trayectoria
-El robot se mueve a lo largo de los puntos calculados en la trayectoria, cumpliendo un número determinado de checkpoints para cada parte del triángulo. Esto asegura un movimiento fluido y preciso en la trayectoria triangular, algo que no se podría lograr con una interpolación lineal.
->>
->>
-### 2. **Selección de dirección y cálculo del ángulo de giro**:  
-   Después de crear la trayectoria y seleccionar el punto de control adecuado, se calcula el ángulo necesario para girar. Dependiendo del ángulo, se elige el modo de movimiento: avance o marcha atrás (reversa). Si es necesario retroceder, se ejecutan funciones adicionales para implementar el movimiento en reversa.
+> 1. **Algoritmo de Bézier.**  
+> El algoritmo de Bézier permite crear curvas suaves, lo cual es importante para mover al robot en una trayectoria de forma no estándar, como un triángulo. Este algoritmo utiliza cuatro puntos de control para crear una curva que conecta suavemente el inicio, el medio y el fin de la trayectoria triangular. La función `cubic_bezier` se encarga de calcular las posiciones a lo largo de esta curva en cada segmento.
+> 
+> 2. **Generación del camino curvo.**  
+> Primero, la función determina dos puntos de control intermedios (CP1 y CP2), que definen la forma de la curva. Usando `generate_trajectory`, la función crea dos curvas de Bézier: una que conecta el primer y segundo puntos del triángulo, y otra que conecta el segundo y tercer puntos.
+> 
+> 3. **Movimiento a lo largo de la trayectoria.**  
+> El robot se mueve a lo largo de los puntos calculados en la trayectoria, cumpliendo un número determinado de checkpoints para cada parte del triángulo. Esto asegura un movimiento fluido y preciso en la trayectoria triangular, algo que no se podría lograr con una interpolación lineal.
+### 2. **Selección de dirección y cálculo del ángulo de giro**  
 
-### 3. **Cálculo de la velocidad angular y lineal**:  
-   Según la posición actual del robot y la dirección elegida, se calculan la velocidad angular y lineal. También se determina la distancia al punto de destino para establecer correctamente la velocidad lineal, lo que permite un movimiento suave.
+Después de crear la trayectoria y seleccionar el punto de control adecuado, se calcula el ángulo necesario para girar. Dependiendo del ángulo, se elige el modo de movimiento: avance o marcha atrás (reversa). Si es necesario retroceder, se ejecutan funciones adicionales para implementar el movimiento en reversa.
+
+#### Definir la dirección de movimiento y el ángulo de giro es un paso importante para el movimiento exitoso del robot hacia el objetivo. Esto incluye:
+
+> 1. Determinar el ángulo de giro hacia el objetivo utilizando el método `calcular_angulo`.  
+> 2. Elegir la dirección de movimiento (adelante o atrás) basado en la diferencia de ángulos con la dirección actual del robot, lo cual se realiza mediante la función `decidir_modo_movimiento`.
+
+#### Detalles del funcionamiento de las funciones
+
+##### `calcular_angulo`
+
+> Esta función calcula el ángulo al que el robot debe girar para moverse hacia el objetivo. Funciona de la siguiente manera:
+> 
+> • **Parámetros de entrada:**
+>   - `x_target`, `y_target`: coordenadas del objetivo.
+>   - `x_robot`, `y_robot`: coordenadas actuales del robot.
+>   - `current_angle`: ángulo actual de orientación del robot en grados.
+> 
+> • **Proceso:**
+> 1. **Cálculo del ángulo hacia el objetivo.** Se determina el ángulo desde el robot hasta el objetivo utilizando la función `atan2`, que devuelve el ángulo en radianes relativo a la posición actual del robot.
+> 2. **Conversión a grados.** El ángulo de giro se convierte de radianes a grados para facilitar los cálculos posteriores.
+> 3. **Normalización de los ángulos.** Se normalizan el ángulo hacia el objetivo y el ángulo actual del robot. Esto ayuda a evitar problemas con valores negativos o valores mayores a 360°.
+> 4. **Cálculo de la diferencia angular.** La función calcula la diferencia entre el ángulo hacia el que mira el robot y la dirección del objetivo, lo que es el ángulo de giro requerido.
+
+##### `decidir_modo_movimiento`
+
+> Esta función se encarga de elegir la dirección de movimiento — adelante o atrás — basada en la magnitud del ángulo de giro:
+> 
+> • **Parámetro de entrada:** `turn_angle_deg` — el ángulo de giro calculado hacia el objetivo.
+> • **Lógica de elección de dirección:**
+>   - Si el ángulo de giro excede el umbral establecido `REVERSE_THRESHOLD`, el robot cambia a modo de movimiento inverso, asignando `self.reverse = True`.
+>   - De lo contrario, el robot se mueve hacia adelante.
+> 
+> • **Ajuste del ángulo al moverse hacia atrás:**
+>   - Si el modo de movimiento inverso está activado, el ángulo de giro se ajusta:
+> 
+> ```python
+> if self.reverse:
+>     self.turn_angle_deg = self.normalize_angle(self.turn_angle_deg - 180)  # Ajustar el ángulo para reversa
+> ```
+> Esto se hace para indicar que el robot debe girar 180 grados para moverse en la dirección opuesta.
+
+De este modo, las funciones `calcular_angulo` y `decidir_modo_movimiento` trabajan en conjunto para asegurar un movimiento preciso y seguro del robot en la dirección deseada.
+
+### 3. **Cálculo de la velocidad angular y lineal**  
+Según la posición actual del robot y la dirección elegida, se calculan la velocidad angular y lineal. También se determina la distancia al punto de destino para establecer correctamente la velocidad lineal, lo que permite un movimiento suave.
+
+#### Lógica general y estructura de la función
+
+> 1. **Cálculo de la velocidad angular**
+> 
+> El método `calcular_velocidad_angular` se encarga de calcular y actualizar la velocidad angular del robot en función del ángulo de giro necesario para alcanzar el objetivo. El cálculo se realiza de la siguiente manera:
+>
+> - **Parámetro de entrada**: 
+>   - `turn_angle_rad`: ángulo de giro en radianes.
+>
+> - **Proceso**:
+>   1. **Cálculo de la velocidad angular**: 
+>      La velocidad angular se calcula como:
+>      ```
+>      self.velocidad_angular = turn_angle_rad * WACC * self.VELOCIDAD_ANGULAR_CONSTANT
+>      ```
+>      Donde `WACC` es el coeficiente de aceleración angular y `VELOCIDAD_ANGULAR_CONSTANT` es una constante que determina la relación entre el ángulo de giro y la velocidad angular.
+>
+>   2. **Limitación de la velocidad angular**:
+>      La velocidad angular se limita a un rango permitido mediante la siguiente expresión:
+>      ```
+>      self.velocidad_angular = max(-WMAX, min(WMAX, self.velocidad_angular))
+>      ```
+>      Aquí, `WMAX` representa la velocidad angular máxima permitida. Esto asegura que el robot no gire demasiado rápido.
+>
+>   3. **Ajuste para segmentos triangulares**:
+>      Si el tipo de segmento objetivo es triangular (`segmentoObjetivo.getType() == 2`), la velocidad angular se multiplica por 1.5 para permitir un giro más ágil.
+
+> 2. **Cálculo de la distancia al objetivo**
+>
+> El método `calcular_distancia_objetivo` determina la distancia euclidiana entre el robot y el objetivo usando la fórmula:
+> ```
+> distancia = √((x_target - x_robot)² + (y_target - y_robot)²)
+> ```
+> - **Parámetros de entrada**:
+>   - `x_target, y_target`: coordenadas del objetivo.
+>   - `x_robot, y_robot`: coordenadas actuales del robot.
+>
+> - **Valor de retorno**: 
+>   - Se devuelve la distancia euclidiana entre el robot y el objetivo, que es utilizada posteriormente para el cálculo de la velocidad lineal.
+
+> 3. **Cálculo de la velocidad lineal**
+>
+> El método `calcular_velocidad_lineal` ajusta la velocidad lineal del robot basado en el ángulo de giro y la distancia al objetivo. El proceso es el siguiente:
+>
+> - **Parámetros de entrada**:
+>   - `turn_angle_rad`: ángulo de giro en radianes.
+>   - `distance`: distancia euclidiana al objetivo.
+>
+> - **Proceso**:
+>   1. **Condiciones para el segmento lineal**:
+>      Si el segmento objetivo es del tipo lineal (`self.segmentoObjetivo.getType() == 1`), se evalúan las condiciones para ajustar la velocidad:
+>      - Si el robot está en el primer checkpoint (`self.check_point_segmento == 0`) y el ángulo de giro es menor que un umbral basado en la distancia:
+>        ```
+>        abs(turn_angle_rad) < math.radians(distance * self.DISTANCE_TURN_CONSTANT)
+>        ```
+>        o
+>        ```
+>        abs(turn_angle_rad) < math.radians(self.MAXIMUM_ANGLE_DEG)
+>        ```
+>        En estos casos, se calcula la velocidad lineal como:
+>        ```
+>        self.velocidad = min(VMAX, distance * VACC * self.CONSTANTE_AUMENTAR_VELOCIDAD)
+>        ```
+>        Donde `VMAX` es la velocidad máxima, `VACC` es el coeficiente de aceleración lineal, y `CONSTANTE_AUMENTAR_VELOCIDAD` es una constante que ayuda a determinar la velocidad en función de la distancia.
+>
+>      - Si el robot no está en el primer checkpoint pero el ángulo de giro sigue siendo bajo, se establece una velocidad constante:
+>        ```
+>        self.velocidad = 3
+>        ```
+>
+>      - Si no se cumplen las condiciones, se establece la velocidad a 0:
+>        ```
+>        self.velocidad = 0
+>        ```
+>
+>   2. **Condiciones para el segmento triangular**:
+>      Si el segmento objetivo es del tipo triangular, se calcula un factor de velocidad angular basado en el ángulo de giro:
+>      ```
+>      velocidad_angular_factor = max(0, 1 - abs(turn_angle_rad) / math.radians(90))
+>      ```
+>      Luego, se ajusta la velocidad lineal considerando este factor:
+>      ```
+>      self.velocidad = min(VMAX, distance * VACC * self.TRIANGLE_SPEED * velocidad_angular_factor)
+>      ```
+>      Aquí, `TRIANGLE_SPEED` es una constante que determina la velocidad para los movimientos en segmentos triangulares.
+
+Este enfoque garantiza que el robot pueda ajustarse de manera dinámica a su entorno, optimizando su movimiento hacia el objetivo mediante un control efectivo de la velocidad angular y lineal.
 
 ### 4. **Verificación de alcance de la meta**:  
    En cada etapa, se verifica si el robot ha alcanzado su punto de destino. Si se ha llegado a la meta, el movimiento continúa hacia el siguiente punto de control o termina.
