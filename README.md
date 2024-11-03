@@ -30,7 +30,7 @@ Esta clase es el núcleo del proyecto, en la que se implementa el sistema expert
    - [Parámetros de la Trayectoria Triangular](#parámetros-de-la-trayectoria-triangular)
    - [Ángulos y Control de Giro](#ángulos-y-control-de-giro)
    
-2. [Metodos Principales](#funciones-principales)
+2. [Metodos Principales](#metodos-principales)
    - [cubic_bezier](#cubic_bezier)
    - [generate_trajectory](#generate_trajectory)
    - [generate_linear_path](#generate_linear_path)
@@ -50,7 +50,7 @@ Esta clase es el núcleo del proyecto, en la que se implementa el sistema expert
 
 ---
 
-### Parámetros de Inicialización
+## Parámetros de Inicialización
 
 #### Indicadores y Estados de Trayectoria
 - `objetivoAlcanzado` (bool): Indicador de si el robot ha alcanzado su objetivo final.
@@ -95,7 +95,7 @@ Esta clase es el núcleo del proyecto, en la que se implementa el sistema expert
 
 ---
 
-### Funciones Principales
+## Metodos Principales
 
 #### `cubic_bezier`
 Calcula la posición en una curva cúbica de Bézier a partir de un valor `t` y cuatro puntos de control.
