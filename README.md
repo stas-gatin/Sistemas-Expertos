@@ -239,20 +239,56 @@ Método para verificar si hay una parte optativa en el proceso. Este método deb
 
 La base del programa es la función `Tomar Decision`, que se llama de forma continua para controlar el movimiento del robot. Esta función realiza las siguientes acciones:
 
-1. **Obtención de datos y cálculo de la trayectoria**:  
+### 1. **Obtención de datos y cálculo de la trayectoria**:  
    La función reúne todos los datos necesarios para construir la trayectoria de movimiento. Para esto, se añaden puntos de control intermedios en cada segmento del camino: en segmentos rectos y en segmentos triangulares. Para cada tipo de segmento, se utilizan los métodos correspondientes definidos en la clase, lo que asegura que los puntos de control se establezcan correctamente.
 
-2. **Selección de dirección y cálculo del ángulo de giro**:  
+El algoritmo en la función obtener_coordenadas_objetivo está diseñado para obtener las coordenadas del objetivo del robot en función de su estado actual y posición, así como del tipo de trayectoria. La función considera si el robot se mueve a lo largo de una línea o un triángulo y actualiza dinámicamente las coordenadas del objetivo. Esto permite al robot seguir una trayectoria compleja correctamente, reaccionando a los cambios en el camino.
+
+#### Lógica general y estructura de la función
+
+> 1. Determinación del tipo de trayectoria
+> Primero, la función verifica el tipo de camino por el que se mueve el robot, ya sea una línea (segmento) o un triángulo.
+> 
+> 	2.	Retorno al inicio (si es necesario)
+> Si el robot ha alcanzado el punto final de la ruta y necesita regresar al punto de inicio, la función devuelve las coordenadas del primer checkpoint.
+
+#### Generación de trayectoria para el segmento
+
+> Para una línea, la función utiliza el método generate_linear_path, que forma una trayectoria recta entre dos puntos (inicio y fin del segmento). El proceso es el siguiente:
+> 1. Determinación de las coordenadas de inicio y fin
+> Usando las coordenadas de inicio y fin del segmento, la función divide el camino en un número determinado de puntos intermedios, lo que define una secuencia precisa de movimiento.
+>
+> 2.	Comprobación de los checkpoints
+> La función determina si el robot está en el inicio, en el medio o en el final del segmento. Si es el checkpoint inicial, se empieza a generar la trayectoria; si es el último > checkpoint, el robot se detiene o se da la vuelta según las condiciones actuales.
+>
+> 	3.	Movimiento a lo largo de la trayectoria
+> En cada paso, la función actualiza las coordenadas del objetivo, asegurando un movimiento fluido a lo largo de la línea. La trayectoria lineal es simple y no requiere cálculos
+adicionales para ajustar la dirección.
+
+#### Generación de trayectoria para el triángulo
+
+> Para el movimiento a lo largo de una trayectoria triangular, la función utiliza el algoritmo de Bézier. La generación de una trayectoria triangular es más compleja, ya que requiere la creación de curvas suaves.
+
+> 1. Algoritmo de Bézier
+> El algoritmo de Bézier permite crear curvas suaves, lo cual es importante para mover al robot en una trayectoria de forma no estándar, como un triángulo. Este algoritmo utiliza cuatro puntos de control para crear una curva que conecta suavemente el inicio, el medio y el fin de la trayectoria triangular. La función cubic_bezier se encarga de calcular las posiciones a lo largo de esta curva en cada segmento.
+> 	2.	Generación del camino curvo
+> Primero, la función determina dos puntos de control intermedios (CP1 y CP2), que definen la forma de la curva. Usando generate_trajectory, la función crea dos curvas de Bézier: una que conecta el primer y segundo puntos del triángulo, y otra que conecta el segundo y tercer puntos.
+> 	3.	Movimiento a lo largo de la trayectoria
+El robot se mueve a lo largo de los puntos calculados en la trayectoria, cumpliendo un número determinado de checkpoints para cada parte del triángulo. Esto asegura un movimiento fluido y preciso en la trayectoria triangular, algo que no se podría lograr con una interpolación lineal.
+>>
+>>
+### 2. **Selección de dirección y cálculo del ángulo de giro**:  
    Después de crear la trayectoria y seleccionar el punto de control adecuado, se calcula el ángulo necesario para girar. Dependiendo del ángulo, se elige el modo de movimiento: avance o marcha atrás (reversa). Si es necesario retroceder, se ejecutan funciones adicionales para implementar el movimiento en reversa.
 
-3. **Cálculo de la velocidad angular y lineal**:  
+### 3. **Cálculo de la velocidad angular y lineal**:  
    Según la posición actual del robot y la dirección elegida, se calculan la velocidad angular y lineal. También se determina la distancia al punto de destino para establecer correctamente la velocidad lineal, lo que permite un movimiento suave.
 
-4. **Verificación de alcance de la meta**:  
+### 4. **Verificación de alcance de la meta**:  
    En cada etapa, se verifica si el robot ha alcanzado su punto de destino. Si se ha llegado a la meta, el movimiento continúa hacia el siguiente punto de control o termina.
 
-5. **Retorno de parámetros de velocidad**:  
+### 5. **Retorno de parámetros de velocidad**:  
    Al finalizar, la función devuelve los valores de velocidad lineal y angular, los cuales se transmiten para controlar el movimiento del robot.
 
 ---
+
 
