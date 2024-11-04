@@ -415,8 +415,88 @@ Según la posición actual del robot y la dirección elegida, se calculan la vel
 
 Este enfoque garantiza que el robot pueda ajustarse de manera dinámica a su entorno, optimizando su movimiento hacia el objetivo mediante un control efectivo de la velocidad angular y lineal.
 
-### 4. **Verificación de alcance de la meta**:  
-   En cada etapa, se verifica si el robot ha alcanzado su punto de destino. Si se ha llegado a la meta, el movimiento continúa hacia el siguiente punto de control o termina.
+### 4. **Verificación de alcance de la meta**  
+En cada etapa, se verifica si el robot ha alcanzado su punto de destino. Si se ha llegado a la meta, el movimiento continúa hacia el siguiente punto de control o termina.
+
+#### Lógica general y estructura de la función
+
+El método `verificar_proximidad_objetivo` gestiona la proximidad del robot al objetivo y la lógica asociada para detenerse, activar puntos de control y reducir la velocidad suavemente. La función se estructura de la siguiente manera:
+
+#### Proceso general de la función
+
+> - **Parámetro de entrada**: 
+>   - `distance`: la distancia actual entre el robot y el objetivo.
+
+#### Lógica para segmentos lineales
+
+1. **Condición de detención**:
+   - Si el tipo de segmento objetivo es lineal (`self.segmentoObjetivo.getType() == 1`), se evalúa si la distancia al objetivo es menor o igual a `STOP_DISTANCE` y si se ha alcanzado el último punto de control (`self.check_point_segmento == len(self.line_trayectory) - 1`):
+     ```python
+     if distance <= self.STOP_DISTANCE and self.check_point_segmento == len(self.line_trayectory)-1:
+     ```
+     - **Acciones**:
+       - Se marca el objetivo como alcanzado:
+         ```python
+         self.objetivoAlcanzado = True
+         ```
+       - Se avanza al siguiente segmento:
+         ```python
+         self.segment_number += 1
+         ```
+
+     - **Control de lógica para volver al inicio**:
+       - Si el robot no debe volver al inicio (`self.VOLVER_AL_INICIO` es `True`), la condición se ajusta:
+         ```python
+         self.objetivoAlcanzado = self.segment_number != self.TOTAL_SEGMENT_NUMBER if self.VOLVER_AL_INICIO else True
+         ```
+       - Se reinicia el contador de puntos de control:
+         ```python
+         self.check_point_segmento = 0
+         ```
+
+2. **Activación de puntos de control**:
+   - Si la distancia es menor que `CHECKPOINT_DISTANCE_ACTIVATOR` y no se ha alcanzado el último punto de control, se incrementa el número del punto de control:
+     ```python
+     elif distance < self.CHECKPOINT_DISTANCE_ACTIVATOR and self.check_point_segmento < len(self.line_trayectory) - 1:
+         self.check_point_segmento += 1
+     ```
+
+3. **Reducción suave de la velocidad**:
+   - Si se activa la frenada (`self.FRENAR == True`), se calcula la distancia necesaria para detenerse suavemente usando la fórmula:
+     ```python
+     stop_distance = (self.velocidad ** 2) / (2 * VACC)
+     ```
+     - Si la distancia al objetivo es menor o igual a la distancia de parada, se reduce la velocidad proporcionalmente a la distancia restante:
+       ```python
+       if distance <= stop_distance:
+           self.velocidad *= (distance / stop_distance)
+       ```
+
+#### Lógica para segmentos triangulares
+
+1. **Condición de detención**:
+   - Si el tipo de segmento objetivo es triangular, se verifica si la distancia es menor o igual a 0.5 y si se ha alcanzado el último punto de control:
+     ```python
+     if distance <= 0.5 and self.check_point_triangulo == (self.TRIANGLE_CHECKPOINTS * 2) - 1:
+         self.objetivoAlcanzado = True
+         self.check_point_triangulo = 0
+     ```
+
+2. **Activación de puntos de control**:
+   - Si la distancia es menor o igual a `MINIMUM_DISTANCE_TRIANGLE_CP` y no se ha alcanzado el penúltimo punto de control, se incrementa el número del punto de control triangular:
+     ```python
+     elif distance <= self.MINIMUM_DISTANCE_TRIANGLE_CP and self.check_point_triangulo <= (self.TRIANGLE_CHECKPOINTS * 2) - 2:
+         self.check_point_triangulo += 1
+     ```
+
+3. **Reducción suave de la velocidad**:
+   - Similar a la lógica anterior, si se activa la frenada, se calcula la distancia de parada y se reduce la velocidad proporcionalmente:
+     ```python
+     elif self.FRENAR == True:
+         stop_distance = (self.velocidad ** 2) / (2 * VACC)
+         if distance <= stop_distance:
+             self.velocidad *= (distance / stop_distance)
+     ```
 
 ### 5. **Retorno de parámetros de velocidad**:  
    Al finalizar, la función devuelve los valores de velocidad lineal y angular, los cuales se transmiten para controlar el movimiento del robot.
