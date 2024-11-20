@@ -1,6 +1,6 @@
 # 🤖 Sistema Experto Basado en Lógica Difusa para Control de Robots
 
-Este proyecto implementa un sistema experto basado en lógica difusa en Python para controlar el movimiento de un robot móvil en un entorno simulado sin obstáculos. El objetivo es que el robot recorra un segmento de línea en el plano con precisión y eficiencia. Para lograr esto, el proyecto está estructurado en varias clases que gestionan diferentes aspectos de la simulación y el control del robot.
+Este codigo implementa un sistema experto basado en lógica difusa en Python para controlar el movimiento de un robot móvil en un entorno simulado sin obstáculos. El objetivo es que el robot recorra un segmento de línea en el plano con precisión y eficiencia. Para lograr esto, el proyecto está estructurado en varias clases que gestionan diferentes aspectos de la simulación y el control del robot.
 
 ## 🎯 Sistema Experto Basado en Lógica Difusa
 
@@ -417,3 +417,86 @@ flowchart TD
 - **Seguridad:** La limitación de velocidades y la verificación continua de la proximidad al objetivo previenen movimientos bruscos y posibles colisiones.
 
 ---
+
+
+# 📘 Sistema de Control Difuso para Robot Móvil
+
+## 🎯 Descripción General
+Este sistema implementa un controlador difuso para la navegación autónoma de un robot móvil, permitiendo el seguimiento de trayectorias tanto lineales como curvas utilizando lógica difusa.
+
+## 🔍 Componentes Principales
+
+### Variables Difusas
+| Variable | Rango | Términos Lingüísticos |
+|----------|--------|----------------------|
+| Distancia | [0, 120] | super_close, close, far |
+| Ángulo | [0, 180] | super_small, small, medium, large |
+| Velocidad Lineal | [0, 3] | super_slow, slow, super_fast |
+| Velocidad Angular | [0, 1] | super_slow, slow, medium, fast |
+
+### 🛣️ Control de Trayectoria
+
+#### Trayectoria Lineal
+- Genera puntos equidistantes entre dos coordenadas
+- Utiliza `LINE_CHECKPOINTS` puntos de control
+- Implementa seguimiento punto a punto
+
+```python
+# Ejemplo de generación de trayectoria lineal
+points = generate_linear_path(A, B)
+```
+
+#### Trayectoria Curva
+- Utiliza curvas de Bézier cúbicas
+- Implementa control de puntos intermedios
+- Calcula offsets dinámicos
+
+![Curva Bézier](https://example.com/bezier-curve.png)
+
+### 🎮 Sistema de Control
+
+#### Reglas Difusas
+Las reglas se organizan en tres categorías principales:
+1. **Distancia Super Cercana** (4 reglas)
+2. **Distancia Cercana** (4 reglas)
+3. **Distancia Lejana** (4 reglas)
+
+#### Proceso de Toma de Decisiones
+```mermaid
+graph TD
+    A[Entrada: Pose Robot] --> B[Calcular Distancia]
+    B --> C[Calcular Ángulo]
+    C --> D[Inferencia Difusa]
+    D --> E[Calcular Velocidades]
+    E --> F[Verificar Proximidad]
+```
+
+## 🔧 Parámetros Configurables
+
+| Parámetro | Valor | Descripción |
+|-----------|--------|-------------|
+| STOP_DISTANCE | 0.5 | Distancia de frenado |
+| LINE_CHECKPOINTS | 20 | Puntos de control lineales |
+| TRIANGLE_CHECKPOINTS | 5 | Puntos de control curvos |
+| CONTROL_POINT_CONSTANT | 0.7 | Constante de control |
+
+## 🎯 Características Especiales
+
+- ↩️ Capacidad de retorno al punto inicial
+- 🔄 Control de segmentos múltiples
+- 📐 Cálculo dinámico de offsets
+- 🛑 Sistema de frenado inteligente
+
+## 📊 Diagrama de Estados
+
+```mermaid
+stateDiagram-v2
+    [*] --> Inicio
+    Inicio --> SeguimientoLineal
+    Inicio --> SeguimientoCurvo
+    SeguimientoLineal --> VerificaciónObjetivo
+    SeguimientoCurvo --> VerificaciónObjetivo
+    VerificaciónObjetivo --> [*]
+```
+
+Este sistema proporciona un control robusto y preciso para la navegación autónoma del robot, adaptándose a diferentes tipos de trayectorias y condiciones de operación.
