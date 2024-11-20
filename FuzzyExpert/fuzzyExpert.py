@@ -10,39 +10,38 @@ from segmento import *
 class FuzzySystem:
     def __init__(self) -> None:
         from P1Launcher import objectiveSet  # Importación de los objetivos del trayecto
+        
+        # --- Estados generales ---
+        self.objetivoAlcanzado: bool = False          # Indica si el robot alcanzó su objetivo
+        self.segmentoObjetivo: object = None          # Segmento objetivo actual
+        self.VOLVER_AL_INICIO: bool = True            # Indica si el robot debe regresar al inicio
+        self.FRENAR: bool = None                      # Indica si el robot debe frenar
 
-        self.objetivoAlcanzado = False
-        self.segmentoObjetivo = None
+        # --- Velocidades y movimiento ---
+        self.velocidad: float = 0                     # Velocidad lineal inicial (m/s)
+        self.velocidad_angular: float = 0             # Velocidad angular inicial (rad/s)
+        self.reverse: bool = False                    # Indica si el robot está en modo reversa
+        self.distance: float = 0.0                    # Distancia al objetivo actual
 
-        self.VOLVER_AL_INICIO: bool = True             # Controla si el robot debe regresar al punto inicial del trayecto
-        self.FRENAR: bool = None                       # Indica si el robot debe frenar
+        # --- Parámetros de trayectoria lineal ---
+        self.check_point_segmento: int = 0            # Índice del punto de control actual
+        self.LINE_CHECKPOINTS: int = 20               # Total de puntos de control en trayectoria lineal
+        self.line_trayectory = None                   # Coordenadas de la trayectoria lineal
+        self.start_point: tuple = None                # Punto de inicio de la trayectoria
+        self.segment_number: int = 0                  # Número del segmento actual
+        self.STOP_DISTANCE: float = 0.5               # Distancia para detenerse al final del segmento
+        self.CHECKPOINT_DISTANCE_ACTIVATOR: float = 4.25 # Distancia que activa cambio de punto de control
+        self.CONSTANTE_AUMENTAR_VELOCIDAD: float = 1.5 # Constante para aumentar velocidad
+        self.FIRST_SEGMENT_INDEX: int = 0             # Índice del primer segmento
+        self.TOTAL_SEGMENT_NUMBER: int = len(objectiveSet) # Número total de segmentos
 
-        # --- Velocidades y modo de movimiento ---
-        self.velocidad: float = 0                      # Velocidad lineal inicial (en m/s)
-        self.velocidad_angular: float = 0              # Velocidad angular inicial (en rad/s)
-        self.reverse: bool = False                     # Modo de reversa inicial
-        self.distance: float = 0.0
+        # --- Parámetros de trayectoria triangular ---
+        self.check_point_triangulo: int = 0           # Índice del punto de control actual en trayectoria triangular
+        self.TRIANGLE_CHECKPOINTS: int = 5            # Total de puntos de control en trayectoria triangular
+        self.triangle_trayectory = None               # Coordenadas de la trayectoria triangular
+        self.CONTROL_POINT_CONSTANT: float = 0.7      # Constante para ajustar los puntos de control
+        self.MINIMUM_DISTANCE_TRIANGLE_CP: int = 4    # Distancia mínima para activar puntos de control
 
-        # --- Parámetros de la trayectoria linear ---
-        self.check_point_segmento: int = 0        # Estado del trayecto: punto inicial (False) o final (True)
-        self.LINE_CHECKPOINTS: int = 20                 # Cantidad de puntos de control en trayecto linear
-        self.line_trayectory = None                    # Lista de coordenadas del trayecto linear
-
-        self.start_point: tuple = None                 # Punto de inicio del trayecto
-        self.segment_number: int = 0                   # Número del segmento actual
-        self.distance: int = 0                         # Distancia hasta el punto objetivo
-        self.STOP_DISTANCE: float = 0.5                # Distancia para detener el robot al final del segmento
-        self.CHECKPOINT_DISTANCE_ACTIVATOR: float = 4.25  # Distancia que activa el cambio de punto de control
-        self.CONSTANTE_AUMENTAR_VELOCIDAD: float = 1.5     # Constante para aumentar velocidad en trayecto
-        self.FIRST_SEGMENT_INDEX: int = 0                  # Índice del primer segmento del trayecto
-        self.TOTAL_SEGMENT_NUMBER: int = len(objectiveSet) # Número total de segmentos en el trayecto
-
-        # --- Parámetros de la trayectoria triangular ---
-        self.check_point_triangulo: int = 0                # Contador de puntos de control en el trayecto triangular
-        self.TRIANGLE_CHECKPOINTS: int = 5                 # Cantidad de puntos de control en trayecto triangular
-        self.triangle_trayectory = None                    # Lista de coordenadas del trayecto triangular
-        self.CONTROL_POINT_CONSTANT: float = 0.7           # Constante de ajuste de puntos de control en trayecto triangular
-        self.MINIMUM_DISTANCE_TRIANGLE_CP: int = 4         # Distancia mínima para activar puntos de control
 
         self.variables = {
             "distance": FuzzyVariable(
@@ -219,133 +218,9 @@ class FuzzySystem:
             defuzzification_operator="cog",
         )
 
-    def setObjetivo(self, obj):
-        self.objetivoAlcanzado = False
-        self.segmentoObjetivo = obj
-
-    def tomarDecision(self, poseRobot):
-        """
-        Determina las velocidades lineal y angular del robot basadas en la posición actual y el objetivo.
-
-        Args:
-            poseRobot (tuple): Pose actual del robot, que incluye las coordenadas (x, y), el ángulo actual y otros datos adicionales.
-
-        Returns:
-            tuple: Una tupla con las velocidades calculadas:
-                - Velocidad lineal (V)
-                - Velocidad angular (W)
-
-        Raises:
-            KeyError: Si faltan variables o reglas en el sistema de inferencia difusa.
-
-        Este método realiza los siguientes pasos:
-        1. Extrae las coordenadas actuales y el ángulo del robot.
-        2. Calcula la distancia y el ángulo hacia el objetivo.
-        3. Utiliza un sistema de inferencia difusa para determinar las velocidades óptimas.
-        4. Verifica la proximidad al objetivo para detener el movimiento cuando sea necesario.
-        """
-
-        # Extraer las coordenadas y el ángulo actual del robot
-        x_robot, y_robot, current_angle, _, _ = poseRobot
-        
-        # Obtener las coordenadas del objetivo
-        x_target, y_target = self.obtener_coordenadas_objetivo()
-        
-        # Calcular la distancia entre el robot y el objetivo
-        self.distance = math.sqrt((x_target - x_robot) ** 2 + (y_target - y_robot) ** 2)
-        
-        # Calcular el ángulo hacia el objetivo
-        angle = self.calcular_angulo(x_target, y_target, x_robot, y_robot, current_angle)
-        
-        try:
-            # Realizar la inferencia difusa para determinar las velocidades
-            result, confidence = self.inference_system(
-                variables=self.variables,
-                rules=self.rules,
-                distance=self.distance,
-                angle=abs(angle)
-            )
-        except KeyError as e:
-            # Manejo de errores en caso de que falten variables o reglas
-            print(f"KeyError occurred: {e}. Verifique las definiciones de las variables y reglas.")
-            raise
-        
-        # Obtener la velocidad lineal y angular del resultado de la inferencia
-        V = result.get("linear_velocity", 0)  # Velocidad lineal
-        W = result.get("angular_velocity", 0)  # Velocidad angular
-
-        # Si el ángulo es negativo, invertir la velocidad angular
-        if angle < 0:
-            W = -W
-
-        # Verificar la proximidad al objetivo para detenerse si es necesario
-        self.verificar_proximidad_objetivo(self.distance)
-
-        # Retornar las velocidades calculadas
-        return (V, W)
-
-    def obtener_coordenadas_objetivo(self):
-        """
-        Obtiene las coordenadas del objetivo basándose en el tipo y estado del segmento actual.
-
-        Returns:
-            tuple: Coordenadas del objetivo (x_target, y_target).
-
-        Este método realiza las siguientes operaciones:
-        1. Comprueba el tipo de segmento:
-        - Si el segmento es lineal (tipo 1), genera una trayectoria lineal o utiliza puntos de inicio/fin.
-        - Si el segmento es triangular, calcula los puntos de control y genera una trayectoria curva.
-        2. Determina el punto objetivo basado en el progreso actual (check_point_segmento o check_point_triangulo).
-        3. Gestiona la variable `FRENAR` dependiendo de la proximidad al objetivo o la trayectoria completada.
-
-        Condiciones especiales:
-        - Si está activado `VOLVER_AL_INICIO` y se alcanza el último segmento, se utiliza el punto inicial como objetivo.
-        - Se guarda el punto inicial al inicio del primer segmento si está configurado `VOLVER_AL_INICIO`.
-
-        Returns:
-            tuple: Coordenadas calculadas del objetivo en formato (x_target, y_target).
-        """
-
-        if self.segmentoObjetivo.getType() == 1:
-            # Guardar datos del primer punto del primer segmento
-            if self.VOLVER_AL_INICIO and self.segment_number == self.FIRST_SEGMENT_INDEX:
-                self.start_point = self.segmentoObjetivo.getInicio()
-
-            # Obtener las coordenadas del objetivo
-            if self.VOLVER_AL_INICIO and self.segment_number == self.TOTAL_SEGMENT_NUMBER:
-                x_target, y_target = self.start_point
-            else:
-                if self.check_point_segmento == 0:
-                    self.line_trayectory = self.generate_linear_path(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getFin())
-                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
-                    self.FRENAR = False
-                elif self.check_point_segmento == len(self.line_trayectory)-1:
-                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
-                    self.FRENAR = False
-                else:
-                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
-                    self.FRENAR = False
-        else:
-            # Obtener las coordenadas del objetivo
-            if self.VOLVER_AL_INICIO and self.segment_number == self.TOTAL_SEGMENT_NUMBER:
-                x_target, y_target = self.start_point
-            else:
-                if self.check_point_triangulo == 0:
-                    CP1, CP2 = self.calculate_control_points(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getMedio(), self.segmentoObjetivo.getFin())
-
-                    self.triangle_trayectory = self.generate_curved_path(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getMedio(), self.segmentoObjetivo.getFin(), CP1, CP2)
-                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
-                    self.FRENAR = False
-                elif self.check_point_triangulo == (self.TRIANGLE_CHECKPOINTS*2)-1:
-                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
-                    if self.segment_number == self.TOTAL_SEGMENT_NUMBER-1:
-                        self.FRENAR = False
-                    else:
-                        self.FRENAR = False
-                else:
-                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
-                    self.FRENAR = False
-        return x_target, y_target
+   # #######################
+    # ---- LINE CONTROLL ----
+    # #######################
     
     def generate_linear_path(self, A, B):
         """
@@ -389,6 +264,10 @@ class FuzzySystem:
         
         return points
     
+    # #######################
+    # ---- CURVE CONTROLL ----
+    # #######################
+    
     def cubic_bezier(self, t, P0, P1, P2, P3):
         """
         Calcula un punto en una curva de Bézier cúbica para un valor dado de `t`.
@@ -411,7 +290,6 @@ class FuzzySystem:
         - La curva es definida por los puntos de control (P0, P1, P2, P3), proporcionando una interpolación suave entre P0 y P3.
         """
         return (1 - t)**3 * P0 + 3 * (1 - t)**2 * t * P1 + 3 * (1 - t) * t**2 * P2 + t**3 * P3
-
     
     def calcular_offset(self, A, B, C):
         """
@@ -522,6 +400,139 @@ class FuzzySystem:
 
         return np.array(trajectory)
 
+
+    # ########################
+    # ---- CODIGO GENERAL ----
+    # ########################
+
+    def setObjetivo(self, obj):
+        self.objetivoAlcanzado = False
+        self.segmentoObjetivo = obj
+
+    def tomarDecision(self, poseRobot):
+        """
+        Determina las velocidades lineal y angular del robot basadas en la posición actual y el objetivo.
+
+        Args:
+            poseRobot (tuple): Pose actual del robot, que incluye las coordenadas (x, y), el ángulo actual y otros datos adicionales.
+
+        Returns:
+            tuple: Una tupla con las velocidades calculadas:
+                - Velocidad lineal (V)
+                - Velocidad angular (W)
+
+        Raises:
+            KeyError: Si faltan variables o reglas en el sistema de inferencia difusa.
+
+        Este método realiza los siguientes pasos:
+        1. Extrae las coordenadas actuales y el ángulo del robot.
+        2. Calcula la distancia y el ángulo hacia el objetivo.
+        3. Utiliza un sistema de inferencia difusa para determinar las velocidades óptimas.
+        4. Verifica la proximidad al objetivo para detener el movimiento cuando sea necesario.
+        """
+
+        # Extraer las coordenadas y el ángulo actual del robot
+        x_robot, y_robot, current_angle, _, _ = poseRobot
+        
+        # Obtener las coordenadas del objetivo
+        x_target, y_target = self.obtener_coordenadas_objetivo()
+        
+        # Calcular la distancia entre el robot y el objetivo
+        self.distance = math.sqrt((x_target - x_robot) ** 2 + (y_target - y_robot) ** 2)
+        
+        # Calcular el ángulo hacia el objetivo
+        angle = self.calcular_angulo(x_target, y_target, x_robot, y_robot, current_angle)
+        
+        try:
+            # Realizar la inferencia difusa para determinar las velocidades
+            result, confidence = self.inference_system(
+                variables=self.variables,
+                rules=self.rules,
+                distance=self.distance,
+                angle=abs(angle)
+            )
+        except KeyError as e:
+            # Manejo de errores en caso de que falten variables o reglas
+            print(f"KeyError occurred: {e}. Verifique las definiciones de las variables y reglas.")
+            raise
+        
+        # Obtener la velocidad lineal y angular del resultado de la inferencia
+        V = result.get("linear_velocity", 0)  # Velocidad lineal
+        W = result.get("angular_velocity", 0)  # Velocidad angular
+
+        # Si el ángulo es negativo, invertir la velocidad angular
+        if angle < 0:
+            W = -W
+
+        # Verificar la proximidad al objetivo para detenerse si es necesario
+        self.verificar_proximidad_objetivo(self.distance)
+
+        # Retornar las velocidades calculadas
+        return (V, W)
+    
+    def obtener_coordenadas_objetivo(self):
+        """
+        Obtiene las coordenadas del objetivo basándose en el tipo y estado del segmento actual.
+
+        Returns:
+            tuple: Coordenadas del objetivo (x_target, y_target).
+
+        Este método realiza las siguientes operaciones:
+        1. Comprueba el tipo de segmento:
+        - Si el segmento es lineal (tipo 1), genera una trayectoria lineal o utiliza puntos de inicio/fin.
+        - Si el segmento es triangular, calcula los puntos de control y genera una trayectoria curva.
+        2. Determina el punto objetivo basado en el progreso actual (check_point_segmento o check_point_triangulo).
+        3. Gestiona la variable `FRENAR` dependiendo de la proximidad al objetivo o la trayectoria completada.
+
+        Condiciones especiales:
+        - Si está activado `VOLVER_AL_INICIO` y se alcanza el último segmento, se utiliza el punto inicial como objetivo.
+        - Se guarda el punto inicial al inicio del primer segmento si está configurado `VOLVER_AL_INICIO`.
+
+        Returns:
+            tuple: Coordenadas calculadas del objetivo en formato (x_target, y_target).
+        """
+
+        if self.segmentoObjetivo.getType() == 1:
+            # Guardar datos del primer punto del primer segmento
+            if self.VOLVER_AL_INICIO and self.segment_number == self.FIRST_SEGMENT_INDEX:
+                self.start_point = self.segmentoObjetivo.getInicio()
+
+            # Obtener las coordenadas del objetivo
+            if self.VOLVER_AL_INICIO and self.segment_number == self.TOTAL_SEGMENT_NUMBER:
+                x_target, y_target = self.start_point
+            else:
+                if self.check_point_segmento == 0:
+                    self.line_trayectory = self.generate_linear_path(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getFin())
+                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
+                    self.FRENAR = False
+                elif self.check_point_segmento == len(self.line_trayectory)-1:
+                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
+                    self.FRENAR = False
+                else:
+                    x_target, y_target = self.line_trayectory[self.check_point_segmento]
+                    self.FRENAR = False
+        else:
+            # Obtener las coordenadas del objetivo
+            if self.VOLVER_AL_INICIO and self.segment_number == self.TOTAL_SEGMENT_NUMBER:
+                x_target, y_target = self.start_point
+            else:
+                if self.check_point_triangulo == 0:
+                    CP1, CP2 = self.calculate_control_points(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getMedio(), self.segmentoObjetivo.getFin())
+
+                    self.triangle_trayectory = self.generate_curved_path(self.segmentoObjetivo.getInicio(), self.segmentoObjetivo.getMedio(), self.segmentoObjetivo.getFin(), CP1, CP2)
+                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
+                    self.FRENAR = False
+                elif self.check_point_triangulo == (self.TRIANGLE_CHECKPOINTS*2)-1:
+                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
+                    if self.segment_number == self.TOTAL_SEGMENT_NUMBER-1:
+                        self.FRENAR = False
+                    else:
+                        self.FRENAR = False
+                else:
+                    x_target, y_target = self.triangle_trayectory[self.check_point_triangulo]
+                    self.FRENAR = False
+        return x_target, y_target
+
     def calcular_angulo(self, x_target, y_target, x_robot, y_robot, current_angle):
         """
         Calcula el ángulo de giro necesario para que el robot apunte hacia un objetivo.
@@ -557,6 +568,9 @@ class FuzzySystem:
         turn_angle_deg = self.normalize_angle(goal_angle_degrees - current_angle)
 
         return turn_angle_deg
+
+    def normalize_angle(self, angle):
+        return (angle + 180) % 360 - 180
     
     def verificar_proximidad_objetivo(self, distance):
         """
@@ -608,9 +622,6 @@ class FuzzySystem:
             elif distance <= self.MINIMUM_DISTANCE_TRIANGLE_CP and self.check_point_triangulo <= (self.TRIANGLE_CHECKPOINTS*2)-2:
                 self.check_point_triangulo += 1
 
-    def normalize_angle(self, angle):
-        return (angle + 180) % 360 - 180
-    
     def esObjetivoAlcanzado(self):
         return self.objetivoAlcanzado
     
