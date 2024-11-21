@@ -351,5 +351,3 @@ El uso de puntos de control y la generación dinámica de trayectorias aseguran 
 Este proyecto es una excelente demostración de cómo la lógica difusa puede ser aplicada en sistemas de control de robots, proporcionando una solución efectiva para problemas de navegación y seguimiento de trayectorias.
 
 ---
-
-🎉 ¡Gracias por leer la documentación! Si tienes alguna pregunta o necesitas más detalles, no dudes en preguntar. ¡Disfruta explorando el mundo de la lógica difusa y la robótica! 🤖🧠
