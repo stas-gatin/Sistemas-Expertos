@@ -24,16 +24,55 @@ El proyecto se compone de varios módulos y clases que trabajan en conjunto para
 - **Función**: Sistema experto que toma decisiones para guiar al robot.
 - **Responsabilidades**: Calcular la trayectoria, ajustar la velocidad y dirección del robot, y gestionar la lógica de evasión de obstáculos.
 
-## Variables en `__init__` de la Clase `ExpertSystem` 📦
+## 📦 Variables en el Constructor de `ExpertSystem`
 
-Al inicializar la clase `ExpertSystem`, se definen varias variables que controlan el comportamiento del robot. Estas variables incluyen:
+El constructor de la clase `ExpertSystem` inicializa varias variables importantes:
 
-- **Flags y estados del trayecto**: `objetivoAlcanzado`, `segmentoObjetivo`, `VOLVER_AL_INICIO`, `GO_AROUND_TRIANGLE`, `FRENAR`.
-- **Velocidades y modos de movimiento**: `velocidad`, `velocidad_angular`, `reverse`.
-- **Parámetros de la trayectoria lineal**: `check_point_segmento`, `LINE_CHECKPOINTS`, `line_trayectory`, `start_point`, `segment_number`, `distance`, `STOP_DISTANCE`, `CHECKPOINT_DISTANCE_ACTIVATOR`, `CONSTANTE_AUMENTAR_VELOCIDAD`, `FIRST_SEGMENT_INDEX`, `TOTAL_SEGMENT_NUMBER`, `LINE_EXPANSION_FACTOR`.
-- **Parámetros de la trayectoria triangular**: `check_point_triangulo`, `MAX_TRIANGLE_CHECKPOINTS`, `CURRENT_TRIANGLE_CHECKPOINTS`, `triangle_trayectory`, `CONTROL_POINT_CONSTANT`, `TRIANGLE_SPEED`, `MINIMUM_DISTANCE_TRIANGLE_CP`, `CURVE_EXPANSION_FACTOR`, `CURVE_CONTROLL_POINTS_OFFSET`.
-- **Ángulos y control de giros**: `turn_angle_rad`, `turn_angle_deg`, `REVERSE_THRESHOLD`, `MAXIMUM_ANGLE_DEG`, `DISTANCE_TURN_CONSTANT`, `VELOCIDAD_ANGULAR_CONSTANT`.
+- **Estados Generales**:
+  - `objetivoAlcanzado`: Indica si el robot ha alcanzado su objetivo.
+  - `segmentoObjetivo`: Segmento objetivo actual.
+  - `VOLVER_AL_INICIO`: Indica si el robot debe regresar al inicio.
+  - `GO_AROUND_TRIANGLE`: Indica si el robot debe rodear un obstáculo triangular.
+  - `FRENAR`: Indica si el robot debe frenar.
 
+- **Velocidades y Movimiento**:
+  - `velocidad`: Velocidad lineal inicial.
+  - `velocidad_angular`: Velocidad angular inicial.
+  - `reverse`: Indica si el robot está en modo reversa.
+  - `distance`: Distancia al objetivo actual.
+
+- **Parámetros de Trayectoria Lineal**:
+  - `check_point_segmento`: Índice del punto de control actual.
+  - `LINE_CHECKPOINTS`: Total de puntos de control en trayectoria lineal.
+  - `line_trayectory`: Coordenadas de la trayectoria lineal.
+  - `start_point`: Punto de inicio de la trayectoria.
+  - `segment_number`: Número del segmento actual.
+  - `STOP_DISTANCE`: Distancia para detenerse al final del segmento.
+  - `CHECKPOINT_DISTANCE_ACTIVATOR`: Distancia que activa cambio de punto de control.
+  - `CONSTANTE_AUMENTAR_VELOCIDAD`: Constante para aumentar velocidad.
+  - `FIRST_SEGMENT_INDEX`: Índice del primer segmento.
+  - `TOTAL_SEGMENT_NUMBER`: Número total de segmentos.
+  - `LINE_EXPANSION_FACTOR`: Factor para extender el punto inicial de la trayectoria lineal.
+
+- **Parámetros de Trayectoria Triangular**:
+  - `check_point_triangulo`: Índice del punto de control actual en trayectoria triangular.
+  - `MAX_TRIANGLE_CHECKPOINTS`: Total de puntos de control en trayectoria triangular.
+  - `CURRENT_TRIANGLE_CHECKPOINTS`: Puntos actuales en la trayectoria triangular.
+  - `triangle_trayectory`: Coordenadas de la trayectoria triangular.
+  - `CONTROL_POINT_CONSTANT`: Constante para ajustar los puntos de control.
+  - `TRIANGLE_SPEED`: Velocidad para movimiento triangular.
+  - `MINIMUM_DISTANCE_TRIANGLE_CP`: Distancia mínima para activar puntos de control.
+  - `CURVE_EXPANSION_FACTOR`: Factor para expansión de curvas.
+  - `CURVE_CONTROLL_POINTS_OFFSET`: Desplazamiento de puntos de control en curvas.
+
+- **Ángulos y Control de Giros**:
+  - `turn_angle_rad`: Ángulo de giro en radianes.
+  - `turn_angle_deg`: Ángulo de giro en grados.
+  - `REVERSE_THRESHOLD`: Umbral en grados para activar marcha atrás.
+  - `MAXIMUM_ANGLE_DEG`: Ángulo máximo antes de desviarse.
+  - `DISTANCE_TURN_CONSTANT`: Constante para ajustar ángulo según distancia.
+  - `VELOCIDAD_ANGULAR_CONSTANT`: Constante para ajustar velocidad angular.
+  
 ## Métodos de la Clase `ExpertSystem` 🛠️
 
 ### Métodos Principales
