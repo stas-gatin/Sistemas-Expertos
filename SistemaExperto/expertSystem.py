@@ -4,9 +4,7 @@
  y guiado de un robot móvil sobre un plano cartesiano pasando por un punto inicial
  y siguiendo una línea recta hasta un punto final
 
- Creado por: Diego Viejo
- el 26/09/2024
- Modificado por: 
+ Creado por: Stanislav Gatin
 
 '''
 
