@@ -3,3 +3,10 @@
 ## Introducción 🌟
 
 Este proyecto es un sistema experto diseñado para controlar y guiar un robot móvil sobre un plano cartesiano. El robot sigue una línea recta desde un punto inicial hasta un punto final, evitando obstáculos y ajustando su trayectoria según sea necesario. El sistema utiliza una serie de algoritmos y métodos para calcular la velocidad y la dirección del robot, asegurando un movimiento suave y preciso.
+
+## Estructura del Proyecto 🧩
+
+Para obtener documentación detallada, consulte README.md en las siguientes carpetas:
+- FuzzyExpert
+- SistemaExperto
+        
